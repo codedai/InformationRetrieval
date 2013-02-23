@@ -1,5 +1,10 @@
 package query;
 
+/**
+ * ResultEntry: field in QueryResult that can hold ranked list information
+ * 
+ * @author Zeyuan Li
+ * */
 public class ResultEntry implements Comparable {
 
   public int docid;
@@ -16,7 +21,7 @@ public class ResultEntry implements Comparable {
   public int compareTo(Object arg0) {
     ResultEntry re = (ResultEntry)arg0;
     if(Double.compare(re.score, score) == 0) {
-      if(docid < re.docid)  return -1;
+      if(re.docid < docid)  return -1;
       else if(docid == re.docid)  return 0;
       else  return 1;
     }

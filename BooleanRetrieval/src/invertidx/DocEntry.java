@@ -2,6 +2,11 @@ package invertidx;
 
 import java.util.List;
 
+/**
+ * DocEntry: document entry fields contained in inverted list
+ * 
+ * @author Zeyuan Li
+ * */
 public class DocEntry {
   
   public int docid;

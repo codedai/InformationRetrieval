@@ -7,13 +7,20 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeSet;
 
 import query.QueryResult;
 import query.ResultEntry;
+import query.Util;
 
+/**
+ * InvertedIndex: class for inverted index (posting lists)
+ * 
+ * @author Zeyuan Li
+ * */
 public class InvertedIndex {
 
   // public String path;
@@ -71,28 +78,28 @@ public class InvertedIndex {
     }
   }
 
-  public QueryResult intersectRanked(InvertedIndex ii) {
-    // io: other i
-    int i = 0, io = 0, n = docEntries.size(), no = ii.docEntries.size();
-    QueryResult qres = new QueryResult();
-    List<ResultEntry> reslist = qres.reslist;
-
-    while (i < n && io < no) {
-      DocEntry en = docEntries.get(i), eno = ii.docEntries.get(io);
-
-      if (en.docid == eno.docid) {
-        // MIN
-        double score = en.tf < eno.tf ? en.tf : eno.tf;
-        reslist.add(new ResultEntry(en.docid, 0, score));
-        i++;
-        io++;
-      } else if (en.docid < eno.docid)
-        i++;
-      else
-        io++;
-    }
-    return qres;
-  }
+//  public QueryResult intersectRanked(InvertedIndex ii) {
+//    // io: other i
+//    int i = 0, io = 0, n = docEntries.size(), no = ii.docEntries.size();
+//    QueryResult qres = new QueryResult();
+//    List<ResultEntry> reslist = qres.reslist;
+//
+//    while (i < n && io < no) {
+//      DocEntry en = docEntries.get(i), eno = ii.docEntries.get(io);
+//
+//      if (en.docid == eno.docid) {
+//        // MIN
+//        double score = en.tf < eno.tf ? en.tf : eno.tf;
+//        reslist.add(new ResultEntry(en.docid, 0, score));
+//        i++;
+//        io++;
+//      } else if (en.docid < eno.docid)
+//        i++;
+//      else
+//        io++;
+//    }
+//    return qres;
+//  }
 
   /*
    * public QueryResult intersectUnranked(InvertedIndex ii) { // io: other i int i = 0, io = 0, n =
@@ -122,14 +129,23 @@ public class InvertedIndex {
   /**
    * NEAR/k query
    * */
-  public void near(InvertedIndex ii, int k) {
+  public void near(InvertedIndex ii, int k, int rankType) {
     if (ii == null)
       return;
 
-    int i = 0, io = 0, n = docEntries.size(), no = ii.docEntries.size();
-
-    while (i < n && io < no) {
-      DocEntry en = docEntries.get(i), eno = ii.docEntries.get(io);
+    //int i = 0, io = 0, n = docEntries.size(), no = ii.docEntries.size();
+    Iterator<DocEntry> ito = ii.docEntries.iterator();
+    Iterator<DocEntry> itdoc = docEntries.iterator();
+    DocEntry en = null, eno = null;
+    List<DocEntry> mergeres = new ArrayList<DocEntry>();
+    
+    // TODO:
+    while (ito.hasNext() && itdoc.hasNext()) {
+      //DocEntry en = docEntries.get(i), eno = ii.docEntries.get(io);
+      if(en == null && eno == null) {
+        en = itdoc.next();
+        eno = ito.next();
+      }
 
       if (en.docid == eno.docid) {
         List<Integer> p1 = en.pos, p2 = eno.pos;
@@ -139,7 +155,7 @@ public class InvertedIndex {
         for (int j1 = 0; j1 < p1.size(); j1++) {
           for (int j2 = 0; j2 < p2.size(); j2++) {
             if (p2.get(j2) - p1.get(j1) <= j2 && p2.get(j2) - p1.get(j1) >= 0) {
-              // may contains duplicates (cnt can propagate through the last query term)
+              // contains duplicates for weighting (cnt can propagate through the last query term)
               //// save distinct posid but cnt should be total # of matches 
               pres.add(p2.get(j2)); 
             } 
@@ -147,27 +163,38 @@ public class InvertedIndex {
               break;
           }
         }
-        // TODO: update position list
-        if (pres.size() == 0) {
-          docEntries.remove(i);
-          n--;
-        }
-        else {
-          en.pos.clear();
-          Collections.sort(pres); // may contains duplicates, more weight
-          en.pos.addAll(pres);
-          en.tf = pres.size();
-          
-          i++;  // IMP!
-        }
         
-        io++;
+        if(pres.size() > 0) {
+          en.pos = pres;
+          if(rankType == Util.TYPE_RANKED)
+            en.tf = pres.size();
+          else 
+            en.tf = 1;
+          mergeres.add(en);
+        }
+        // TODO: update position list
+//        if (pres.size() == 0) {
+//          docEntries.remove(i);
+//          n--;
+//        }
+//        else {
+//          en.pos.clear();
+//          Collections.sort(pres); // may contains duplicates, more weight
+//          en.pos.addAll(pres);
+//          en.tf = pres.size();
+//          
+//          i++;  // IMP!
+//        }
+        en = itdoc.next();
+        eno = ito.next();
       } else if (en.docid < eno.docid) {
-        docEntries.remove(i);
-        n--;
+        en = itdoc.next();
       } else
-        io++;
-    }
+        eno = ito.next();
+    }// end while
+    
+    // assign new list
+    docEntries = mergeres;
   }
 
   /**

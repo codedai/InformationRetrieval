@@ -12,7 +12,13 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Scanner;
 
+/**
+ * QueryResult: class for the result of a query
+ * 
+ * @author Zeyuan Li
+ * */
 public class QueryResult {
 
   public int qid;
@@ -26,13 +32,11 @@ public class QueryResult {
   private static final int retSize = 100;
 
   public QueryResult() {
-    // reslist = new LinkedList<ResultEntry>();
   }
 
   public QueryResult(int qid) {
     this.qid = qid;
     q0 = "Q0";
-    // reslist = new ArrayList<ResultEntry>();
   }
 
   public QueryResult(int qid, String q0, List<ResultEntry> reslist) {
@@ -61,12 +65,20 @@ public class QueryResult {
     }
     // merge with other ii
     else {
-      int i = 0, ires = 0, n = ii.docEntries.size(), nres = reslist.size();
-
-      while (i < n && ires < nres) {
-        DocEntry docen = ii.docEntries.get(i);
-        ResultEntry resen = reslist.get(ires);
-
+      //int i = 0, ires = 0, n = ii.docEntries.size(), nres = reslist.size();
+      Iterator<DocEntry> itdoc = ii.docEntries.iterator();
+      Iterator<ResultEntry> itres = reslist.iterator();
+      List<ResultEntry> mergeres = new ArrayList<ResultEntry>();  // IMP: array list is much faster
+      DocEntry docen = null;
+      ResultEntry resen = null;
+      
+      while (itdoc.hasNext() && itres.hasNext()) {
+        // IMP: linkedlist random access is slow!!!!
+        if(docen == null && resen == null) {
+          docen = itdoc.next();
+          resen = itres.next();
+        }
+        
         if (docen.docid == resen.docid) {
           if (rankType == Util.TYPE_RANKED) {
             if (resen.score > docen.tf)
@@ -75,18 +87,22 @@ public class QueryResult {
             if (resen.score > 1)
               resen.score = 1;
           }
-          i++;
-          ires++;
+          
+          mergeres.add(resen);
+          
+          docen = itdoc.next();
+          resen = itres.next();
         } else if (docen.docid < resen.docid) {
-          i++;
+          docen = itdoc.next();
         }
         // delete results from reslist
         else {
-          reslist.remove(ires);
-          nres--;
+          resen = itres.next();
         }
       }
-
+      
+      // assign new list
+      reslist = mergeres;
     }
   }
 
@@ -103,12 +119,19 @@ public class QueryResult {
     }
     // merge with other QueryResult
     else {
-      int io = 0, ires = 0, no = qro.reslist.size(), nres = reslist.size();
-
-      while (io < no && ires < nres) {
-        ResultEntry oen = qro.reslist.get(io);
-        ResultEntry resen = reslist.get(ires);
-
+      //int io = 0, ires = 0, no = qro.reslist.size(), nres = reslist.size();
+      Iterator<ResultEntry> ito = qro.reslist.iterator();
+      Iterator<ResultEntry> itres = reslist.iterator();
+      List<ResultEntry> mergeres = new ArrayList<ResultEntry>();  // IMP: array list is much faster
+      ResultEntry oen = null;
+      ResultEntry resen = null;
+      
+      while (ito.hasNext() && itres.hasNext()) {
+        if(oen == null && resen == null) {
+          oen = ito.next();
+          resen = itres.next();
+        }
+        
         if (oen.docid == resen.docid) {
           if (rankType == Util.TYPE_RANKED) {
             if (resen.score > oen.score)
@@ -117,17 +140,21 @@ public class QueryResult {
             if (resen.score > 1)
               resen.score = 1;
           }
-          io++;
-          ires++;
+          mergeres.add(resen);
+          
+          oen = ito.next();
+          resen = itres.next();
         } else if (oen.docid < resen.docid) {
-          io++;
+          oen = ito.next();
         }
         // delete results from reslist
         else {
-          reslist.remove(ires);
-          nres--;
+          resen = itres.next();
         }
       }
+      
+      // assign new list
+      reslist = mergeres;
     }
   }
 
@@ -150,11 +177,19 @@ public class QueryResult {
     }
     // merge with other ii
     else {
-      int i = 0, ires = 0, n = ii.docEntries.size(), nres = reslist.size();
-
-      while (i < n && ires < nres) {
-        DocEntry docen = ii.docEntries.get(i);
-        ResultEntry resen = reslist.get(ires);
+      //int i = 0, ires = 0, n = ii.docEntries.size(), nres = reslist.size();
+      Iterator<DocEntry> itdoc = ii.docEntries.iterator();
+      Iterator<ResultEntry> itres = reslist.iterator();
+      DocEntry docen = null;
+      ResultEntry resen = null;
+      // IMP: linked list add is also slow!!!!
+      List<ResultEntry> mergeres = new ArrayList<ResultEntry>();
+      
+      while (itdoc.hasNext() && itres.hasNext()) {
+        if(docen == null && resen == null) {
+          docen = itdoc.next();
+          resen = itres.next();
+        }
 
         if (docen.docid == resen.docid) {
           if (rankType == Util.TYPE_RANKED) {
@@ -164,35 +199,49 @@ public class QueryResult {
             if (resen.score < 1)
               resen.score = 1;
           }
-          i++;
-          ires++;
+          
+          mergeres.add(resen);
+          
+          docen = itdoc.next();
+          resen = itres.next();
         } else if (docen.docid < resen.docid) {
-          assert docen.docid < reslist.get(ires).docid : docen.docid + " " + reslist.get(ires).docid;
+          //assert docen.docid < reslist.get(ires).docid : docen.docid + " " + reslist.get(ires).docid;
           
           if (rankType == Util.TYPE_RANKED)
-            reslist.add(ires, new ResultEntry(docen.docid, -1, docen.tf));
+            mergeres.add(new ResultEntry(docen.docid, -1, docen.tf));
+            //reslist.add(ires, new ResultEntry(docen.docid, -1, docen.tf));
           else if (rankType == Util.TYPE_UNRANKED)
-            reslist.add(ires, new ResultEntry(docen.docid, -1, 1));
+            mergeres.add(new ResultEntry(docen.docid, -1, 1));
+            //reslist.add(ires, new ResultEntry(docen.docid, -1, 1));
 
-          i++;
-          ires++;
-          nres++; //IMP
+          docen = itdoc.next();
+//          i++;
+//          ires++;
+//          nres++; //IMP
         } else {
-          ires++;
+          if (rankType == Util.TYPE_RANKED)
+            mergeres.add(resen);
+            //reslist.add(ires, new ResultEntry(docen.docid, -1, docen.tf));
+          else if (rankType == Util.TYPE_UNRANKED)
+            mergeres.add(resen);
+          
+          resen = itres.next();
         }
       }
 
       // ii has elements left
-      while (i < n) {
-        DocEntry docen = ii.docEntries.get(i);
+      while (itdoc.hasNext()) {
+        docen = itdoc.next();
         //assert docen.docid > reslist.get(reslist.size()-1).docid : docen.docid +" " + reslist.get(reslist.size()-1).docid;
         
         if (rankType == Util.TYPE_RANKED)
-          reslist.add(new ResultEntry(docen.docid, -1, docen.tf));
+          mergeres.add(new ResultEntry(docen.docid, -1, docen.tf));
         else if (rankType == Util.TYPE_UNRANKED)
-          reslist.add(new ResultEntry(docen.docid, -1, 1));
-        i++;
+          mergeres.add(new ResultEntry(docen.docid, -1, 1));
       }
+      
+      // assign new list
+      reslist = mergeres;
     }
     
   }
@@ -210,12 +259,20 @@ public class QueryResult {
     }
     // merge with other ii
     else {
-      int io = 0, ires = 0, no = qro.reslist.size(), nres = reslist.size();
-
-      while (io < no && ires < nres) {
-        ResultEntry oen = qro.reslist.get(io);
-        ResultEntry resen = reslist.get(ires);
-
+      //int io = 0, ires = 0, no = qro.reslist.size(), nres = reslist.size();
+      Iterator<ResultEntry> ito = qro.reslist.iterator();
+      Iterator<ResultEntry> itres = reslist.iterator();
+      ResultEntry oen = null;
+      ResultEntry resen = null;
+      ArrayList<ResultEntry> mergeres = new ArrayList<ResultEntry>();
+      
+      
+      while (ito.hasNext() && itres.hasNext()) {
+        if(oen == null && resen == null) {
+          oen = ito.next();
+          resen = itres.next();
+        }
+        
         if (oen.docid == resen.docid) {
           if (rankType == Util.TYPE_RANKED) {
             if (resen.score < oen.score)
@@ -224,35 +281,39 @@ public class QueryResult {
             if (resen.score < 1)
               resen.score = 1;
           }
-          io++;
-          ires++;
-        } else if (oen.docid < resen.docid) {
-          assert oen.docid < reslist.get(ires).docid : oen.docid + " " + reslist.get(ires).docid;
           
+          mergeres.add(resen);
+          
+          oen = ito.next();
+          resen = itres.next();
+        } else if (oen.docid < resen.docid) {
+          //assert oen.docid < reslist.get(ires).docid : oen.docid + " " + reslist.get(ires).docid;
           if (rankType == Util.TYPE_RANKED) 
-            reslist.add(ires, new ResultEntry(oen.docid, -1, oen.score));
+            mergeres.add(new ResultEntry(oen.docid, -1, oen.score));
           else if (rankType == Util.TYPE_UNRANKED)
-            reslist.add(ires, new ResultEntry(oen.docid, -1, 1));
+            mergeres.add(new ResultEntry(oen.docid, -1, 1));
 
-          io++;
-          ires++;
-          nres++; //IMP
+          oen = ito.next();
+//          io++;
+//          ires++;
+//          nres++; //IMP
         } else {
-          ires++;
+          mergeres.add(resen);
+          
+          resen = itres.next();
         }
       }
 
       // other qr has elements left
-      while (io < no) {
-        ResultEntry eno = qro.reslist.get(io);
-        assert eno.docid > reslist.get(reslist.size()-1).docid : eno.docid +" " + reslist.get(reslist.size()-1).docid;
+      while (ito.hasNext()) {
+        ResultEntry eno = ito.next();
+        //assert eno.docid > reslist.get(reslist.size()-1).docid : eno.docid +" " + reslist.get(reslist.size()-1).docid;
         
-        if (rankType == Util.TYPE_RANKED)
-          reslist.add(new ResultEntry(eno.docid, -1, eno.score));
-        else if (rankType == Util.TYPE_UNRANKED)
-          reslist.add(new ResultEntry(eno.docid, -1, 1));
-        io++;
+        mergeres.add(eno);
       }
+      
+      // assign new list
+      reslist = mergeres;
     }
     
   }

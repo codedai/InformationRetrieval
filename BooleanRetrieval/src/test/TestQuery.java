@@ -21,9 +21,14 @@ import query.QueryResult;
 import query.QueryTreeNode;
 import query.Util;
 
+/**
+ * TestQuery: driver program for the whole boolean retrieval system
+ * 
+ * @author Zeyuan Li
+ * */
 public class TestQuery {
 
-  // private String qpath = "data/handin_queries.txt", qStruPath = "data/handin_stru_queries.txt";
+  //private String qpath = "data/handin_queries.txt", qStruPath = "data/handin_stru_queries.txt";
   private String qpath = "data/queries.txt", qStruPath = "data/stru_queries.txt";
 
   private String outpathPrefix = "data/result/";
@@ -209,19 +214,19 @@ public class TestQuery {
     // TODO Auto-generated method stub
     TestQuery tq = new TestQuery();
     int cnt = 1;
-    int type = Util.TYPE_AND;
-    int rank = Util.TYPE_RANKED;
-//     try {
-////     tq.runOneStruQuery(cnt, rank);
-//     
+    int type = Util.TYPE_STRUCTURE;
+    int rank = Util.TYPE_UNRANKED;
+     try {
+     tq.runOneStruQuery(cnt, rank);
+     
 //     tq.runOneQuery(cnt, type, rank);
-//     } catch (IOException e) {
-//     // TODO Auto-generated catch block
-//     e.printStackTrace();
-//     }
+     } catch (IOException e) {
+     // TODO Auto-generated catch block
+     e.printStackTrace();
+     }
      
 
-    tq.runQuery();
+    //tq.runQuery();
 
     // tq.testDup();
   }

@@ -9,6 +9,11 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * QueryParser: parse a query into a query tree
+ * 
+ * @author Zeyuan Li
+ * */
 public class QueryParser {
   
 //  private int qid;  // query id

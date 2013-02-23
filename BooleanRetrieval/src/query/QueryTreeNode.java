@@ -3,6 +3,11 @@ package query;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * QueryTreeNode: TreeNode for query tree
+ * 
+ * @author Zeyuan Li
+ * */
 public class QueryTreeNode {
   
   public String val;

@@ -16,6 +16,11 @@ import query.QueryResult;
 import query.QueryTreeNode;
 import query.Util;
 
+/**
+ * QueryExector: class for execute a query
+ * 
+ * @author Zeyuan Li
+ * */
 public class QueryExecutor {
 
   public HashMap<String, String> pathmap;
@@ -43,6 +48,7 @@ public class QueryExecutor {
   }
   
   public void loadIndexInMem() {
+    System.out.println("Loading inverted index...");
     for(Entry<String, String> en : pathmap.entrySet()) {
       InvertedIndex ii = new InvertedIndex(en.getValue());
       iimap.put(en.getKey(), ii);
@@ -172,7 +178,7 @@ public class QueryExecutor {
           for (DocEntry en : doclist)
             en.tf = 1;
         } else {
-          iipr.near(ii, k);
+          iipr.near(ii, k, rankType);
         }
       }
 

@@ -1,5 +1,10 @@
 package query;
 
+/**
+ * Util: Utillity class and constant defination
+ * 
+ * @author Zeyuan Li
+ * */
 public class Util {
   public static final String AND = "#AND";
   public static final String OR = "#OR";

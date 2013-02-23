@@ -3,6 +3,11 @@ package query;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Query: place holder for all the information related to a query
+ * 
+ * @author Zeyuan Li
+ * */
 public class Query {
   
   public int qid;   // query id
