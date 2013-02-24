@@ -32,7 +32,6 @@ public class InvertedIndex {
 
   public double ttc; // total term count
 
-  // TODO: use hashmap to store docEntries
   public List<DocEntry> docEntries; // a list of doc entries
 
   public InvertedIndex() {
@@ -78,53 +77,6 @@ public class InvertedIndex {
     }
   }
 
-//  public QueryResult intersectRanked(InvertedIndex ii) {
-//    // io: other i
-//    int i = 0, io = 0, n = docEntries.size(), no = ii.docEntries.size();
-//    QueryResult qres = new QueryResult();
-//    List<ResultEntry> reslist = qres.reslist;
-//
-//    while (i < n && io < no) {
-//      DocEntry en = docEntries.get(i), eno = ii.docEntries.get(io);
-//
-//      if (en.docid == eno.docid) {
-//        // MIN
-//        double score = en.tf < eno.tf ? en.tf : eno.tf;
-//        reslist.add(new ResultEntry(en.docid, 0, score));
-//        i++;
-//        io++;
-//      } else if (en.docid < eno.docid)
-//        i++;
-//      else
-//        io++;
-//    }
-//    return qres;
-//  }
-
-  /*
-   * public QueryResult intersectUnranked(InvertedIndex ii) { // io: other i int i = 0, io = 0, n =
-   * docEntries.size(), no = ii.docEntries.size(); QueryResult qres = new QueryResult();
-   * List<ResultEntry> reslist = qres.reslist;
-   * 
-   * while(i < n && io < no) { DocEntry en = docEntries.get(i), eno = ii.docEntries.get(io);
-   * 
-   * if(en.docid == eno.docid) { double score = 1.0; reslist.add(new ResultEntry(en.docid, 0,
-   * score)); i++; io++; } else if(en.docid < eno.docid) i++; else io++; } return qres; }
-   * 
-   * public QueryResult unionRanked(InvertedIndex ii) { // io: other i int i = 0, io = 0, n =
-   * docEntries.size(), no = ii.docEntries.size(); QueryResult qres = new QueryResult();
-   * List<ResultEntry> reslist = qres.reslist;
-   * 
-   * while(i < n && io < no) { DocEntry en = docEntries.get(i), eno = ii.docEntries.get(io);
-   * 
-   * if(en.docid == eno.docid) { // MAX double score = en.tf > eno.tf ? en.tf : eno.tf;
-   * reslist.add(new ResultEntry(en.docid, 0, score)); i++; io++; } else if(en.docid < eno.docid) {
-   * reslist.add(new ResultEntry(en.docid, 0, en.tf)); i++; } else { reslist.add(new
-   * ResultEntry(eno.docid, 0, eno.tf)); io++; } }
-   * 
-   * // other ii has reamining elements while(io < no) { DocEntry eno = ii.docEntries.get(io);
-   * reslist.add(new ResultEntry(eno.docid, 0, eno.tf)); io++; } return qres; }
-   */
 
   /**
    * NEAR/k query
@@ -133,15 +85,12 @@ public class InvertedIndex {
     if (ii == null)
       return;
 
-    //int i = 0, io = 0, n = docEntries.size(), no = ii.docEntries.size();
     Iterator<DocEntry> ito = ii.docEntries.iterator();
     Iterator<DocEntry> itdoc = docEntries.iterator();
     DocEntry en = null, eno = null;
     List<DocEntry> mergeres = new ArrayList<DocEntry>();
     
-    // TODO:
     while (ito.hasNext() && itdoc.hasNext()) {
-      //DocEntry en = docEntries.get(i), eno = ii.docEntries.get(io);
       if(en == null && eno == null) {
         en = itdoc.next();
         eno = ito.next();
@@ -172,19 +121,7 @@ public class InvertedIndex {
             en.tf = 1;
           mergeres.add(en);
         }
-        // TODO: update position list
-//        if (pres.size() == 0) {
-//          docEntries.remove(i);
-//          n--;
-//        }
-//        else {
-//          en.pos.clear();
-//          Collections.sort(pres); // may contains duplicates, more weight
-//          en.pos.addAll(pres);
-//          en.tf = pres.size();
-//          
-//          i++;  // IMP!
-//        }
+        
         en = itdoc.next();
         eno = ito.next();
       } else if (en.docid < eno.docid) {
@@ -195,14 +132,6 @@ public class InvertedIndex {
     
     // assign new list
     docEntries = mergeres;
-  }
-
-  /**
-   * @param args
-   */
-  public static void main(String[] args) {
-    // TODO Auto-generated method stub
-
   }
 
 }

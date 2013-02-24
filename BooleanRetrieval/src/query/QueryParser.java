@@ -16,9 +16,6 @@ import java.util.List;
  * */
 public class QueryParser {
   
-//  private int qid;  // query id
-//  private String qori;  // original query string
-//  private String field;   // support field query
   private HashSet<String> typeset = new HashSet<String>();
   private HashSet<String> stopwords = new HashSet<String>();
   private static String stopPath = "data/stoplist.txt";
@@ -91,31 +88,6 @@ public class QueryParser {
     return getQueryNear(q, 5);
   }*/
   
-  /*public String getQueryStructured(Query q) {
-    StringBuilder sb = new StringBuilder();
-    int winsize = 5;
-    sb.append(Util.OR + " ( ");
-    sb.append(getQueryBOWAnd(q) + " ");
-    sb.append(getQueryNear(q, winsize) + " )");
-    
-    return sb.toString();
-  }*/
-  
-  /*public String getQueryStructured(Query q) {
-    List<Query> qbigram = q.splitBigramQuery();
-    StringBuilder sb = new StringBuilder();
-    int winsize = 5;
-    
-    sb.append(Util.OR + " ( ");
-    // add bigram queries
-    for(int i = 0; i < qbigram.size(); i++)
-      sb.append(getQueryNear(qbigram.get(i), winsize) + " ");
-    
-    sb.append(" )");
-    
-    return sb.toString();
-  }*/
-  
   public QueryTreeNode parseOr(Query q) {
     String qstr = getQueryBOWOr(q);
     return parse(qstr);
@@ -127,7 +99,6 @@ public class QueryParser {
   }
   
   public QueryTreeNode parseStructured(Query q) {
-    //String qstr = getQueryStructured(q);
     return parse(q.qori);
   }
   
@@ -175,14 +146,6 @@ public class QueryParser {
     
     for(QueryTreeNode child : root.children)
       dfs(child);
-  }
-  
-  /**
-   * @param args
-   */
-  public static void main(String[] args) {
-    // TODO Auto-generated method stub
-
   }
 
 }

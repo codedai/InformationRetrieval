@@ -51,8 +51,7 @@ public class QueryResult {
 
     // first time
     if (reslist == null) {
-      // reslist = new ArrayList<ResultEntry>();
-      reslist = new LinkedList<ResultEntry>();
+      reslist = new ArrayList<ResultEntry>();
 
       Iterator<DocEntry> it = ii.docEntries.iterator();
       while (it.hasNext()) {
@@ -65,7 +64,6 @@ public class QueryResult {
     }
     // merge with other ii
     else {
-      //int i = 0, ires = 0, n = ii.docEntries.size(), nres = reslist.size();
       Iterator<DocEntry> itdoc = ii.docEntries.iterator();
       Iterator<ResultEntry> itres = reslist.iterator();
       List<ResultEntry> mergeres = new ArrayList<ResultEntry>();  // IMP: array list is much faster
@@ -119,7 +117,6 @@ public class QueryResult {
     }
     // merge with other QueryResult
     else {
-      //int io = 0, ires = 0, no = qro.reslist.size(), nres = reslist.size();
       Iterator<ResultEntry> ito = qro.reslist.iterator();
       Iterator<ResultEntry> itres = reslist.iterator();
       List<ResultEntry> mergeres = new ArrayList<ResultEntry>();  // IMP: array list is much faster
@@ -177,7 +174,6 @@ public class QueryResult {
     }
     // merge with other ii
     else {
-      //int i = 0, ires = 0, n = ii.docEntries.size(), nres = reslist.size();
       Iterator<DocEntry> itdoc = ii.docEntries.iterator();
       Iterator<ResultEntry> itres = reslist.iterator();
       DocEntry docen = null;
@@ -209,19 +205,13 @@ public class QueryResult {
           
           if (rankType == Util.TYPE_RANKED)
             mergeres.add(new ResultEntry(docen.docid, -1, docen.tf));
-            //reslist.add(ires, new ResultEntry(docen.docid, -1, docen.tf));
           else if (rankType == Util.TYPE_UNRANKED)
             mergeres.add(new ResultEntry(docen.docid, -1, 1));
-            //reslist.add(ires, new ResultEntry(docen.docid, -1, 1));
 
           docen = itdoc.next();
-//          i++;
-//          ires++;
-//          nres++; //IMP
         } else {
           if (rankType == Util.TYPE_RANKED)
             mergeres.add(resen);
-            //reslist.add(ires, new ResultEntry(docen.docid, -1, docen.tf));
           else if (rankType == Util.TYPE_UNRANKED)
             mergeres.add(resen);
           
@@ -259,7 +249,6 @@ public class QueryResult {
     }
     // merge with other ii
     else {
-      //int io = 0, ires = 0, no = qro.reslist.size(), nres = reslist.size();
       Iterator<ResultEntry> ito = qro.reslist.iterator();
       Iterator<ResultEntry> itres = reslist.iterator();
       ResultEntry oen = null;
@@ -294,9 +283,6 @@ public class QueryResult {
             mergeres.add(new ResultEntry(oen.docid, -1, 1));
 
           oen = ito.next();
-//          io++;
-//          ires++;
-//          nres++; //IMP
         } else {
           mergeres.add(resen);
           

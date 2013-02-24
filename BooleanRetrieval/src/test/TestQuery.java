@@ -91,7 +91,6 @@ public class TestQuery {
       qres.serialize(outpath);
 
       System.out.println("Done: " + q.qid);
-      // if(i==2) break;
     }
     long endTime = System.currentTimeMillis();
     System.out.println("Finised test: id:" + curRunId + " idStr:" + curRunIdStr + " in "
@@ -132,7 +131,6 @@ public class TestQuery {
       qres.serialize(outpath);
 
       System.out.println("Done: " + q.qid);
-      // if(i==2) break;
     }
     long endTime = System.currentTimeMillis();
     System.out.println("Finised test: id:" + curRunId + " idStr:" + curRunIdStr + " in "
@@ -227,8 +225,6 @@ public class TestQuery {
      
 
     //tq.runQuery();
-
-    // tq.testDup();
   }
 
 }
