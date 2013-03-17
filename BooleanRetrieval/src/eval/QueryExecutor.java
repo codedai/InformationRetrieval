@@ -175,8 +175,8 @@ public class QueryExecutor {
           iipr = ii;
           // reset freq (near score is the freq of doc matched the NEAR operator)
           List<DocEntry> doclist = iipr.docEntries;
-          for (DocEntry en : doclist)
-            en.tf = 1;
+//          for (DocEntry en : doclist)
+//            en.tf = 1;
         } else {
           iipr.near(ii, k, rankType);
         }

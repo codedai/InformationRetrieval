@@ -28,8 +28,8 @@ import query.Util;
  * */
 public class TestQuery {
 
-  //private String qpath = "data/handin_queries.txt", qStruPath = "data/handin_stru_queries.txt";
-  private String qpath = "data/queries.txt", qStruPath = "data/stru_queries.txt";
+  private String qpath = "data/handin_queries.txt", qStruPath = "data/handin_stru_queries.txt";
+  //private String qpath = "data/queries.txt", qStruPath = "data/stru_queries.txt";
 
   private String outpathPrefix = "data/result/";
 
@@ -213,7 +213,7 @@ public class TestQuery {
     TestQuery tq = new TestQuery();
     int cnt = 1;
     int type = Util.TYPE_STRUCTURE;
-    int rank = Util.TYPE_UNRANKED;
+    int rank = Util.TYPE_RANKED;
      try {
      tq.runOneStruQuery(cnt, rank);
      
@@ -224,7 +224,7 @@ public class TestQuery {
      }
      
 
-    //tq.runQuery();
+//    tq.runQuery();
   }
 
 }
