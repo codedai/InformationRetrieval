@@ -1,4 +1,4 @@
 InformationRetrieval
 ====================
 
-IR boolean ranked and unranked system
+IR boolean ranked, unranked, BM25 and Indri system 
