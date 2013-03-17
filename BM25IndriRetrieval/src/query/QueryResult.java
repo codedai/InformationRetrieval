@@ -122,7 +122,7 @@ public class QueryResult {
   }
   
   public void sum(QueryResult qro, int rankType) {
-    if (qro == null)
+    if (qro.reslist == null)
       return;
 
     // first time
@@ -183,7 +183,7 @@ public class QueryResult {
         DocEntry en = it.next();
         if (rankType == Util.TYPE_INDRI) {
           double Pqd = Util.getTwoStageSmoothScore(ii, en);
-          reslist.add(new ResultEntry(en.docid, -1, Math.pow(Pqd, qlen)));
+          reslist.add(new ResultEntry(en.docid, -1, Math.pow(Pqd, 1.0/qlen)));
         }
       }
     }
@@ -200,7 +200,7 @@ public class QueryResult {
         if (docen.docid == resen.docid) {
           if (rankType == Util.TYPE_INDRI) {
             double tss = Util.getTwoStageSmoothScore(ii, docen);
-            resen.score *= Math.pow(tss, qlen);
+            resen.score *= Math.pow(tss, 1.0/qlen);
             mergeres.add(resen);
           } 
           
@@ -221,7 +221,7 @@ public class QueryResult {
   }
   
   public void combine(QueryResult qro, int rankType, int qlen) {
-    if (qro == null)
+    if (qro.reslist == null)
       return;
 
     // first time
@@ -239,7 +239,7 @@ public class QueryResult {
         
         if (oen.docid == resen.docid) {
           if (rankType == Util.TYPE_INDRI) {
-            resen.score += Math.pow(oen.score, qlen);
+            resen.score += Math.pow(oen.score, 1.0/qlen);
             mergeres.add(resen);
           } 
           
@@ -311,7 +311,7 @@ public class QueryResult {
  }
  
  public void weight(QueryResult qro, int rankType, double normWeight) {
-   if (qro == null)
+   if (qro.reslist == null)
      return;
 
    // first time
@@ -406,7 +406,7 @@ public class QueryResult {
    * intersect with QueryResult
    * */
   public void intersect(QueryResult qro, int rankType) {
-    if (qro == null)
+    if (qro.reslist == null)
       return;
 
     // first time
@@ -539,7 +539,7 @@ public class QueryResult {
    * union with oter QueryResult
    * */
   public void union(QueryResult qro, int rankType) {
-    if (qro == null)
+    if (qro.reslist == null)
       return;
 
     // first time
@@ -606,26 +606,6 @@ public class QueryResult {
       reslist.get(i - 1).rank = i;
   }
 
-//  public void serialize(String path) {
-//    if (path == null || path.length() == 0)
-//      return;
-//
-//    try {
-//      BufferedWriter bw = new BufferedWriter(new FileWriter(path, true));
-//
-//      for (int i = 0; i < retSize && i < reslist.size(); i++) {
-//        ResultEntry en = reslist.get(i);
-//        bw.write(String
-//                .format("%d %s %d %d %f %s\n", qid, q0, en.docid, en.rank, en.score, runid));
-//      }
-//
-//      bw.close();
-//    } catch (IOException e) {
-//      // TODO Auto-generated catch block
-//      e.printStackTrace();
-//    }
-//  }
-  
   public void serialize(String path) {
     if (path == null || path.length() == 0)
       return;
@@ -636,7 +616,7 @@ public class QueryResult {
       for (int i = 0; i < retSize && i < reslist.size(); i++) {
         ResultEntry en = reslist.get(i);
         bw.write(String
-                .format("%d %s %d %d %.1f %s\n", qid, q0, en.docid, en.rank, en.score, runid));
+                .format("%d %s %d %d %f %s\n", qid, q0, en.docid, en.rank, en.score, runid));
       }
 
       bw.close();
@@ -645,6 +625,26 @@ public class QueryResult {
       e.printStackTrace();
     }
   }
+  
+//  public void serialize(String path) {
+//    if (path == null || path.length() == 0)
+//      return;
+//
+//    try {
+//      BufferedWriter bw = new BufferedWriter(new FileWriter(path, true));
+//
+//      for (int i = 0; i < retSize && i < reslist.size(); i++) {
+//        ResultEntry en = reslist.get(i);
+//        bw.write(String
+//                .format("%d %s %d %d %.1f %s\n", qid, q0, en.docid, en.rank, en.score, runid));
+//      }
+//
+//      bw.close();
+//    } catch (IOException e) {
+//      // TODO Auto-generated catch block
+//      e.printStackTrace();
+//    }
+//  }
   
   public void checkDup() {
     HashSet<Integer> set = new HashSet<Integer>();

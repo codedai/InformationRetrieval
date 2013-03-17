@@ -28,8 +28,8 @@ import query.Util;
  * */
 public class TestQuery {
 
-  //private String qpath = "data/handin_queries.txt", qStruPath = "data/handin_stru_queries.txt";
-  private String qpath = "data/queries.txt", qStruPath = "data/stru_queries.txt";
+  private String qpath = "data/handin_queries.txt", qStruPath = "data/handin_stru_queries.txt";
+  //private String qpath = "data/queries.txt", qStruPath = "data/queries_SDM+MR.txt";
 
   private String outpathPrefix = "data/result/";
 
@@ -43,7 +43,7 @@ public class TestQuery {
   
   private int[] paraType = { Util.TYPE_OR, Util.TYPE_SUM, Util.TYPE_ANDINDRI };
 
-  private String[] paraTypeS = { "_or", "_sum", "_combine" };
+  private String[] paraTypeS = { "_or", "_sum", "_and" };
 
   public List<String> qs, qsStru;
 
@@ -211,20 +211,20 @@ public class TestQuery {
     // TODO Auto-generated method stub
     TestQuery tq = new TestQuery();
     int cnt = 3;
-    int type = Util.TYPE_ANDINDRI;
+    int type = Util.TYPE_STRUCTURE;
     int rank = Util.TYPE_INDRI;
     
-//     try {
-////     tq.runOneStruQuery(cnt, rank);
-//     
-////       tq.runOneQuery(cnt, type, rank);
-//     } catch (IOException e) {
-//     // TODO Auto-generated catch block
-//     e.printStackTrace();
-//     }
+     try {
+     tq.runOneStruQuery(cnt, rank);
+     
+//       tq.runOneQuery(cnt, type, rank);
+     } catch (IOException e) {
+     // TODO Auto-generated catch block
+     e.printStackTrace();
+     }
      
 
-    tq.runQuery();
+//    tq.runQuery();
   }
 
 }

@@ -66,7 +66,10 @@ public class Util {
     double mu=2500, lambda=0.4;
     
     double tf = en.tf;
+    // defalut Pqc
     double Pqc = ii.ctf / total_word_size;
+    // alternative Pqc
+    //double Pqc = ii.df / total_doc_size;
     double dirprior = lambda * (tf + mu*Pqc) / (en.doclen+mu);
     double mixture = (1-lambda) * Pqc;
     

@@ -120,7 +120,20 @@ public class QueryParser {
   }
   
   public QueryTreeNode parseStructured(Query q) {
-    return parse(q.qori);
+    if(q.qori.contains("+"))
+      return parse(q.qori);
+    // structured query doesn't have field
+    else {
+      StringBuilder sb = new StringBuilder();
+      String[] strs = q.qori.split("\\s+");
+      for(String s : strs) { 
+        if(!s.contains(".") && !s.equals("(") && !s.equals(")") && !s.startsWith("#"))
+          sb.append(s + "+" + Util.FIELD_DEFAULT + " ");
+        else
+          sb.append(s + " ");
+      }
+      return parse(sb.toString());
+    }
   }
   
   public QueryTreeNode parse(Query q) {
