@@ -19,7 +19,7 @@ public class DocEntry {
   public DocEntry(int docid, int tf, int doclen, List<Integer> pos) {
     this.docid = docid;
     this.tf = tf;
-    this.docid = docid;
+    this.doclen = doclen;
     this.pos = pos;
   }
 

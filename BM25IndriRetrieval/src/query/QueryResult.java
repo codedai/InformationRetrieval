@@ -169,8 +169,8 @@ public class QueryResult {
     }
   }
   
-  // like intersect
-  public void combine(InvertedIndex ii, int rankType, int qlen) {
+  // like or
+  public void combine(InvertedIndex ii, int rankType, int qlen, double dftScore) {  // ctf from previous inverted list
     if (ii == null)
       return;
 
@@ -206,11 +206,22 @@ public class QueryResult {
           
           idoc++;
           ires++;
-        } else if (docen.docid < resen.docid) {
+        } 
+        else if (docen.docid < resen.docid) {
+          if (rankType == Util.TYPE_INDRI) {
+            double tss = Util.getTwoStageSmoothScore(ii, docen);
+            ResultEntry ren = new ResultEntry(docen.docid, -1, Math.pow(tss, 1.0/qlen));
+            // apply default score
+            ren.score *= dftScore;
+            mergeres.add(ren);
+          } 
           idoc++;
         }
         // delete results from reslist
         else {
+          double dft = Util.getTwoStageSmoothScoreDefault(ii.ctf);
+          resen.score *= Math.pow(dft, 1.0/qlen);
+          mergeres.add(resen);
           ires++;
         }
       }
@@ -220,13 +231,15 @@ public class QueryResult {
     }
   }
   
-  public void combine(QueryResult qro, int rankType, int qlen) {
+  public void combine(QueryResult qro, int rankType, int qlen, double dftScore, double dftScoreOther) {
     if (qro.reslist == null)
       return;
 
     // first time
     if (reslist == null) {
       reslist = qro.reslist;
+      for(ResultEntry re : reslist)
+        re.score = Math.pow(re.score, 1.0/qlen);
     }
     // merge with other QueryResult
     else {
@@ -239,16 +252,26 @@ public class QueryResult {
         
         if (oen.docid == resen.docid) {
           if (rankType == Util.TYPE_INDRI) {
-            resen.score += Math.pow(oen.score, 1.0/qlen);
+            resen.score *= Math.pow(oen.score, 1.0/qlen);
             mergeres.add(resen);
           } 
           
           io++;
           ires++;
-        } else if (oen.docid < resen.docid) {
+        }
+        else if (oen.docid < resen.docid) {
+          if (rankType == Util.TYPE_INDRI) {
+            // TODO:
+            oen.score = Math.pow(oen.score, 1.0/qlen);
+            oen.score *= dftScore;
+            mergeres.add(oen);
+          }
           io++;
         }
         else {
+          //resen.score = Math.pow(resen.score, 1.0/qlen);
+          resen.score *= Math.pow(dftScoreOther, 1.0/qlen);
+          mergeres.add(resen);
           ires++;
         }
       }
@@ -257,9 +280,9 @@ public class QueryResult {
       reslist = mergeres;
     }
   }
-  
-//like intersect
- public void weight(InvertedIndex ii, int rankType, double normWeight) {
+
+//like or
+ public void weight(InvertedIndex ii, int rankType, double normWeight, double dftScore) {
    if (ii == null)
      return;
 
@@ -297,10 +320,18 @@ public class QueryResult {
          ires++;
        } 
        else if (docen.docid < resen.docid) {
+         if(rankType == Util.TYPE_INDRI) {
+           double doctss = Util.getTwoStageSmoothScore(ii, docen);
+           ResultEntry ren = new ResultEntry(docen.docid, -1, Math.pow(doctss, normWeight));
+           ren.score *= dftScore;
+           mergeres.add(ren);
+         }
          idoc++;
        }
-       // delete results from reslist
        else {
+         double doctss = Util.getTwoStageSmoothScoreDefault(ii.ctf);
+         resen.score *= Math.pow(doctss, normWeight);
+         mergeres.add(resen);
          ires++;
        }
      }
@@ -310,13 +341,15 @@ public class QueryResult {
    }
  }
  
- public void weight(QueryResult qro, int rankType, double normWeight) {
+ public void weight(QueryResult qro, int rankType, double normWeight, double dftScore, double dftScoreOther) {
    if (qro.reslist == null)
      return;
 
    // first time
    if (reslist == null) {
      reslist = qro.reslist;
+     for(ResultEntry re : reslist)
+       re.score = Math.pow(re.score, normWeight);
    }
    // merge with other QueryResult
    else {
@@ -329,16 +362,24 @@ public class QueryResult {
        
        if (oen.docid == resen.docid) {
          if (rankType == Util.TYPE_INDRI) {
-           resen.score += Math.pow(oen.score, normWeight);
+           resen.score *= Math.pow(oen.score, normWeight);
            mergeres.add(resen);
          } 
          
          io++;
          ires++;
        } else if (oen.docid < resen.docid) {
+         if(rankType == Util.TYPE_INDRI) {
+           // TODO:
+           oen.score = Math.pow(oen.score, normWeight);
+           oen.score *= dftScore;
+           mergeres.add(oen);
+         }
          io++;
        }
        else {
+         resen.score *= Math.pow(dftScoreOther, normWeight);
+         mergeres.add(resen);
          ires++;
        }
      }

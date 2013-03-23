@@ -90,8 +90,7 @@ public class InvertedIndex {
       return;
 
     int io = 0, idoc = 0, no = ii.docEntries.size(), ndoc = docEntries.size();
-//    Iterator<DocEntry> ito = ii.docEntries.iterator();
-//    Iterator<DocEntry> itdoc = docEntries.iterator();
+    double ctfnew = 0.0;
     ArrayList<DocEntry> mergeres = new ArrayList<DocEntry>();
     
     while (io < no && idoc < ndoc) {
@@ -102,25 +101,26 @@ public class InvertedIndex {
         List<Integer> p1 = en.pos, p2 = eno.pos;
         List<Integer> pres = new ArrayList<Integer>(); // possible result positions
         
-        // near score is the freq of doc that match the NEAR operator
-        for (int j1 = 0; j1 < p1.size(); j1++) {
-          for (int j2 = 0; j2 < p2.size(); j2++) {
-            if (p2.get(j2) - p1.get(j1) <= k && p2.get(j2) - p1.get(j1) >= 0) {
-              // contains duplicates for weighting (cnt can propagate through the last query term)
-              //// save distinct posid but cnt should be total # of matches 
-              pres.add(p2.get(j2)); 
-            } 
-            else if (p2.get(j2) - p1.get(j1) > k)
-              break;
+        int j1 = 0, j2 = 0, n1 = p1.size(), n2 = p2.size();
+        while(j1 < n1 && j2 < n2) {
+          if(p1.get(j1) > p2.get(j2))
+            j2++;
+          else {
+            // find a match
+            if(p2.get(j2) - p1.get(j1) <= k) {
+              pres.add(p2.get(j2));
+              j1++;
+              j2++;
+            }
+            else
+              j1++;
           }
         }
         
         if(pres.size() > 0) {
           en.pos = pres;
-          if(rankType == Util.TYPE_RANKED)
-            en.tf = pres.size();
-          else 
-            en.tf = 1;
+          en.tf = pres.size();
+          ctfnew += en.tf;
           mergeres.add(en);
         }
         
@@ -132,17 +132,16 @@ public class InvertedIndex {
         io++;
     }// end while
     
-    // assign new list
+    // assign new list and update df, ctf
     docEntries = mergeres;
+    df = docEntries.size();
+    ctf = ctfnew;
   }
   
   public void uw(ArrayList<InvertedIndex> iis, int k, int rankType) {
     int n = iis.size();
     int[] idx = new int[n];
-    
-//    int[] n = new int[iis.size()];
-//    for(int i = 0; i < iis.size(); i++)
-//      n[i] = iis.get(i).docEntries.size();
+    double ctfnew = 0.0;
       
     ArrayList<DocEntry> mergeres = new ArrayList<DocEntry>();
     boolean end = false;
@@ -156,10 +155,12 @@ public class InvertedIndex {
       
       for(int i = 1; i < n; i++) {
         int curdocid = iis.get(i).docEntries.get(idx[i]).docid;
+        if(curdocid != mindocid)
+          issame = false;
+        
         if(curdocid < mindocid) {
           mindocid = curdocid;
           idxmin = i;
-          issame = false;
         }
       }
       
@@ -171,7 +172,7 @@ public class InvertedIndex {
       }
       // same docids, merge posting lists
       else {
-        // invariant: idx[0..n-1] are the same
+        // invariant: iis.get(i).docEntries.get(idx[i]).docid are the same
         int[] idxpos = new int[n];
         List<Integer> pres = new ArrayList<Integer>();
         boolean endpos = false;
@@ -222,7 +223,9 @@ public class InvertedIndex {
         if(pres.size() > 0) {
           DocEntry en = iis.get(idxmin).docEntries.get(idx[idxmin]);
           en.pos = pres;
-          en.tf = pres.size();
+          en.tf = pres.size();  // update tf
+          
+          ctfnew += en.tf;
           mergeres.add(en);
         }
         
@@ -237,8 +240,10 @@ public class InvertedIndex {
       }
     }
     
-    // assign new list
+    // assign new list and update df, ctf
     docEntries = mergeres;
+    df = docEntries.size();
+    ctf = ctfnew;
   }
 
 }

@@ -112,7 +112,7 @@ public class QueryExecutor {
 
     return qres;
   }
-
+  
   /**
    * dfs (post-order) on query tree to execute query
    * */
@@ -131,10 +131,12 @@ public class QueryExecutor {
     
     // current node final result
     QueryResult qres = new QueryResult();
+    double dftScore = 1.0;
+    
     // do operations in non-leaf nodes
     if (root.val.equals(Util.AND)) {
       // For indri only: calc query length (# of leaf nodes)
-      int qlen = root.getNumLeafChildren();
+      int qlen = root.children.size();
       
       for (int i = 0; i < root.children.size(); i++) {
         QueryTreeNode child = root.children.get(i);
@@ -150,18 +152,31 @@ public class QueryExecutor {
               ii = new InvertedIndex(pathmap.get(child.val));
           }
           if(rankType == Util.TYPE_INDRI)
-            qres.combine(ii, rankType, qlen);
+            qres.combine(ii, rankType, qlen, dftScore);  // include ctf from previous inverted list
           else
             qres.intersect(ii, rankType);
+          // calc default score
+          if(ii != null)
+            dftScore *= Math.pow(Util.getTwoStageSmoothScoreDefault(ii.ctf), 1.0/qlen);
+        }
+        else if(child.isNearOrUW()) {
+          if(rankType == Util.TYPE_INDRI)
+            qres.combine(child.iicur, rankType, qlen, dftScore); 
+          
+          dftScore *= Math.pow(Util.getTwoStageSmoothScoreDefault(child.iicur.ctf), 1.0/qlen);
         }
         else {  //non leaf intersect with QueryResult
           if(rankType == Util.TYPE_INDRI)
-            qres.combine(childres.get(i), rankType, qlen);
+            qres.combine(childres.get(i), rankType, qlen, dftScore, child.dftScore); 
           else
             qres.intersect(childres.get(i), rankType);
+          
+          dftScore *= Math.pow(child.dftScore, 1.0/qlen);
         } 
       }
-    } 
+      
+      root.dftScore = dftScore;
+    }
     else if (root.val.equals(Util.OR)) {
       for (int i = 0; i < root.children.size(); i++) {
         QueryTreeNode child = root.children.get(i);
@@ -181,6 +196,8 @@ public class QueryExecutor {
         else
           qres.union(childres.get(i), rankType);
       }
+      
+      root.dftScore = dftScore;
     } 
     else if (root.val.startsWith(Util.NEAR)) {
       InvertedIndex iipr = null;
@@ -208,8 +225,12 @@ public class QueryExecutor {
         }
       }
 
-      // union NEAR result
-      qres.union(iipr, Util.TYPE_RANKED);
+      root.iicur = iipr;
+      // transform inverted list to score list
+      // TODO: add type bm25
+      int qlen = root.children.size();
+      if(rankType == Util.TYPE_INDRI)
+        qres.combine(iipr, rankType, qlen, dftScore);
     }
     else if (root.val.equals(Util.SUM)) {
       for (int i = 0; i < root.children.size(); i++) {
@@ -252,32 +273,14 @@ public class QueryExecutor {
       
       iipr.uw(iis, k, rankType);
 
-      // union NEAR result
-      qres.union(iipr, Util.TYPE_RANKED);
+      root.iicur = iipr;
+      // transform inverted list to score list
+      // TODO: add type bm25
+      int qlen = root.children.size();
+      if(rankType == Util.TYPE_INDRI)
+        qres.combine(iipr, rankType, qlen, dftScore);
+      
     }
-//    else if (root.val.equals(Util.COMBINE)) {
-//      // calc query length (# of leaf nodes)
-//      int qlen = root.getNumLeafChildren();
-//      
-//      for (int i = 0; i < root.children.size(); i++) {
-//        QueryTreeNode child = root.children.get(i);
-//        
-//        if (child.isLeaf()) {
-//          InvertedIndex ii = null;
-//          if(loadIndexMem) {
-//            if(iimap.containsKey(child.val))
-//              ii = iimap.get(child.val);
-//          }
-//          else {
-//            if (pathmap.containsKey(child.val))
-//              ii = new InvertedIndex(pathmap.get(child.val)); 
-//          }
-//          qres.combine(ii, rankType, qlen);
-//        }
-//        else
-//          qres.combine(childres.get(i), rankType, qlen);
-//      }
-//    } 
     else if (root.val.equals(Util.WEIGHT)) {
       // calc query length (# of leaf nodes)
       double totalWeight = root.getAllChildrenWeight();
@@ -295,17 +298,25 @@ public class QueryExecutor {
             if (pathmap.containsKey(child.val))
               ii = new InvertedIndex(pathmap.get(child.val)); 
           }
-          qres.weight(ii, rankType, child.weight / totalWeight);
+          
+          if(child.weight > 0)
+            qres.weight(ii, rankType, child.weight / totalWeight, dftScore);
+          // calc default score
+          if(ii != null)
+            dftScore *= Math.pow(Util.getTwoStageSmoothScoreDefault(ii.ctf), child.weight/totalWeight);
         }
         else {
-          double curNodeTotalWeight = child.getAllChildrenWeight();
-          qres.weight(childres.get(i), rankType, curNodeTotalWeight / totalWeight);
+          if(child.weight > 0)
+            qres.weight(childres.get(i), rankType, child.weight / totalWeight, dftScore, child.dftScore);
+          
+          dftScore *= Math.pow(child.dftScore, child.weight / totalWeight);
         }
       }
+      
+      root.dftScore = dftScore;
     } 
     
     return qres;
   }
-
-
+  
 }

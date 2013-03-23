@@ -49,8 +49,13 @@ public class Util {
   public static final double total_doc_size = 890630.0;
   public static final double total_word_size = 1158815080.0;
   
+  // in two stage smoothing
+  public static double mu=2500, lambda=0.4;
+  //public static double mu=2500, lambda=0.6;
+  
   public static double getRSV(InvertedIndex ii, DocEntry en, int qtf) {
     double k1=1.2, b=0.75, k3=0;
+    //double k1=1.2, b=0.75, k3=-0.8;
     
     double df = ii.df;
     int tf = en.tf;
@@ -63,14 +68,27 @@ public class Util {
   }
   
   public static double getTwoStageSmoothScore(InvertedIndex ii, DocEntry en) {
-    double mu=2500, lambda=0.4;
-    
     double tf = en.tf;
     // defalut Pqc
     double Pqc = ii.ctf / total_word_size;
     // alternative Pqc
     //double Pqc = ii.df / total_doc_size;
-    double dirprior = lambda * (tf + mu*Pqc) / (en.doclen+mu);
+    
+    double dirprior = lambda * (tf + mu*Pqc) / (en.doclen+mu);  //tf
+    double mixture = (1-lambda) * Pqc;  //idf
+    
+    return dirprior + mixture;
+  }
+  
+  // assigne default score
+  public static double getTwoStageSmoothScoreDefault(double ctf) {
+    double tf = 0;
+    // defalut Pqc
+    double Pqc = ctf / total_word_size;
+    // alternative Pqc
+    //double Pqc = ii.df / total_doc_size;
+    
+    double dirprior = lambda * (tf + mu*Pqc) / (avg_doc_size+mu);
     double mixture = (1-lambda) * Pqc;
     
     return dirprior + mixture;

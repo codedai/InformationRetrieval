@@ -29,7 +29,7 @@ import query.Util;
 public class TestQuery {
 
   private String qpath = "data/handin_queries.txt", qStruPath = "data/handin_stru_queries.txt";
-  //private String qpath = "data/queries.txt", qStruPath = "data/queries_SDM+MR.txt";
+  //private String qpath = "data/queries.txt", qStruPath = "data/queries_MR_gen.txt";
 
   private String outpathPrefix = "data/result/";
 
@@ -93,9 +93,9 @@ public class TestQuery {
       System.out.println("Done: " + q.qid);
     }
     long endTime = System.currentTimeMillis();
-    System.out.println("Finised test: id:" + curRunId + " idStr:" + curRunIdStr + " in "
+    System.out.println("Finished test: id:" + curRunId + " idStr:" + curRunIdStr + " in "
             + ((endTime - startTime) / 1000) + " secs");
-    br.write("Finised test: id:" + curRunId + " idStr:" + curRunIdStr + " in "
+    br.write("Finished test: id:" + curRunId + " idStr:" + curRunIdStr + " in "
             + ((endTime - startTime) / 1000) + " secs\n");
 
     br.close();
@@ -153,13 +153,6 @@ public class TestQuery {
         cnt++;
       }
 
-      // run structed queries
-//      for (int pj = 0; pj < paraRank.length; pj++) {
-//        int rank = paraRank[pj];
-//        runOneStruQuery(cnt, rank);
-//        cnt++;
-//      }
-
     } catch (IOException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
@@ -210,21 +203,27 @@ public class TestQuery {
   public static void main(String[] args) {
     // TODO Auto-generated method stub
     TestQuery tq = new TestQuery();
-    int cnt = 3;
-    int type = Util.TYPE_STRUCTURE;
-    int rank = Util.TYPE_INDRI;
-    
-     try {
-     tq.runOneStruQuery(cnt, rank);
-     
-//       tq.runOneQuery(cnt, type, rank);
-     } catch (IOException e) {
-     // TODO Auto-generated catch block
-     e.printStackTrace();
-     }
+//    int cnt = 2;
+//    int type = Util.TYPE_SUM;
+//    int rank = Util.TYPE_BM25;
+//    int cnt = 3;
+//    int type = Util.TYPE_ANDINDRI;
+//    int rank = Util.TYPE_INDRI;
+//    int cnt = 3;
+//    int type = Util.TYPE_STRUCTURE;
+//    int rank = Util.TYPE_INDRI;
+//    
+//     try {
+//     tq.runOneStruQuery(cnt, rank);
+//     
+////       tq.runOneQuery(cnt, type, rank);
+//     } catch (IOException e) {
+//     // TODO Auto-generated catch block
+//     e.printStackTrace();
+//     }
      
 
-//    tq.runQuery();
+    tq.runQuery();
   }
 
 }
